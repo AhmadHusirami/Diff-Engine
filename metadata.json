@@ -1,0 +1,5 @@
+{
+  "name": "Text Diff Tool",
+  "description": "Compare and visualize differences between two pieces of text.",
+  "requestFramePermissions": []
+}
