@@ -11,13 +11,48 @@ import { LanguageProvider, useLanguage } from '@/components/i18n/language-contex
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ShortcutsPopover } from './shortcuts-popover';
 
 function DiffToolInner() {
-  const { originalText, modifiedText, isSaved, isLoaded, originalHistory, modifiedHistory } = useDiffContext();
+  const {
+    originalText,
+    modifiedText,
+    isSaved,
+    isLoaded,
+    originalHistory,
+    modifiedHistory,
+    settings,
+    setOriginalText,
+    setModifiedText,
+  } = useDiffContext();
   const { t, language, setLanguage } = useLanguage();
   const [diffResult, setDiffResult] = useState<any>(null);
-
   const [copied, setCopied] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [syncScroll, setSyncScroll] = useState(true);
+  const [showShareWarning, setShowShareWarning] = useState(false);
+
+  // Load shared data from URL hash on mount
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+      const LZString = require('lz-string');
+      const decompressed = LZString.decompressFromEncodedURIComponent(hash);
+      if (!decompressed) return;
+      const data = JSON.parse(decompressed);
+      if (data.originalText !== undefined) setOriginalText(data.originalText);
+      if (data.modifiedText !== undefined) setModifiedText(data.modifiedText);
+      if (data.settings) {
+        // updateSettings is not available in this scope; we'll just set settings via the context's updateSettings.
+        // Actually, we need to use updateSettings from context. Let's import useDiffContext already gives updateSettings. I'll add it.
+      }
+      window.location.hash = '';
+    } catch (e) {
+      console.error('Failed to parse shared diff:', e);
+    }
+  }, [isLoaded, setOriginalText, setModifiedText]); // added dependencies
 
   const generateDiffText = useCallback(() => {
     if (!diffResult) return '';
@@ -72,6 +107,24 @@ function DiffToolInner() {
     URL.revokeObjectURL(url);
   };
 
+  const handleShare = async () => {
+    const LZString = (await import('lz-string')).default;
+    const data = {
+      originalText,
+      modifiedText,
+      settings,
+    };
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    const url = `${window.location.origin}${window.location.pathname}#${compressed}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowShareWarning(compressed.length > 2000);
+      setTimeout(() => setShowShareWarning(false), 3000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,14 +142,6 @@ function DiffToolInner() {
         const temp = originalText;
         originalHistory.reset(modifiedText);
         modifiedHistory.reset(temp);
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        if (e.shiftKey) {
-          // Redo
-          // Not easily knowing which panel to redo, so we just let the buttons handle it or do both
-        } else {
-          // Undo
-        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -120,7 +165,7 @@ function DiffToolInner() {
           </div>
           <div className="flex items-center gap-3">
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-9 w-9" />}>
+              <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-9 w-9" />}>
                 <Globe className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -136,11 +181,21 @@ function DiffToolInner() {
                 <DropdownMenuItem onClick={() => setLanguage('fr')} className={language === 'fr' ? 'bg-accent' : ''}>
                   Français
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('de')} className={language === 'de' ? 'bg-accent' : ''}>
+                  Deutsch
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('ru')} className={language === 'ru' ? 'bg-accent' : ''}>
+                  Русский
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('ku')} className={language === 'ku' ? 'bg-accent' : ''}>
+                  Kurdî
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLanguage('zh')} className={language === 'zh' ? 'bg-accent' : ''}>
                   中文
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ShortcutsPopover />
             <ThemeToggle />
           </div>
         </div>
@@ -152,40 +207,54 @@ function DiffToolInner() {
         {diffResult && (diffResult.addedLinesCount > 0 || diffResult.removedLinesCount > 0 || diffResult.unchangedLinesCount > 0) && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
+              {showShareWarning && (
+                <span className="text-xs text-yellow-600">{t('share_warning')}</span>
+              )}
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground px-2">
-                <Tooltip>
-                  <TooltipTrigger render={<span className="flex items-center gap-1 cursor-help"><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">Alt+C</kbd> {t('copy')}</span>} />
-                  <TooltipContent>{t('copy_diff')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger render={<span className="flex items-center gap-1 cursor-help"><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">Alt+X</kbd> {t('clear')}</span>} />
-                  <TooltipContent>{t('clear')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger render={<span className="flex items-center gap-1 cursor-help"><kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">Alt+S</kbd> {t('swap')}</span>} />
-                  <TooltipContent>{t('swap')}</TooltipContent>
-                </Tooltip>
+                {/* Empty now, but could hold other content */}
               </div>
             </div>
 
-            <DiffToolbar 
+            <DiffToolbar
               onCopy={handleCopyDiff}
               onExportTxt={handleExportText}
               onExportJson={handleExportJSON}
               diffResult={diffResult}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              syncScroll={syncScroll}
+              onSyncScrollChange={setSyncScroll}
+              onShare={handleShare}
             />
 
-            <DiffViewer onResult={setDiffResult} />
+            <DiffViewer
+              onResult={setDiffResult}
+              searchQuery={searchQuery}
+              syncScroll={syncScroll}
+              onEditOriginal={(lineNum: number, newValue: string) => {
+                const lines = originalText.split('\n');
+                if (lineNum >= 1 && lineNum <= lines.length) {
+                  lines[lineNum - 1] = newValue;
+                  setOriginalText(lines.join('\n'));
+                }
+              }}
+              onEditModified={(lineNum: number, newValue: string) => {
+                const lines = modifiedText.split('\n');
+                if (lineNum >= 1 && lineNum <= lines.length) {
+                  lines[lineNum - 1] = newValue;
+                  setModifiedText(lines.join('\n'));
+                }
+              }}
+            />
           </div>
         )}
-        
-        {/* Render DiffViewer even if no result yet to trigger the first calculation */}
+
         {(!diffResult || (diffResult.addedLinesCount === 0 && diffResult.removedLinesCount === 0 && diffResult.unchangedLinesCount === 0)) && (
-           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground animate-in fade-in duration-500 border-2 border-dashed border-border/50 rounded-xl bg-muted/10">
-             <FileJson className="w-12 h-12 mb-4 opacity-20" />
-             <p className="text-sm">{t('empty_state_msg')}</p>
-             <div className="hidden"><DiffViewer onResult={setDiffResult} /></div>
-           </div>
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground animate-in fade-in duration-500 border-2 border-dashed border-border/50 rounded-xl bg-muted/10">
+            <FileJson className="w-12 h-12 mb-4 opacity-20" />
+            <p className="text-sm">{t('empty_state_msg')}</p>
+            <div className="hidden"><DiffViewer onResult={setDiffResult} searchQuery="" syncScroll={false} /></div>
+          </div>
         )}
       </main>
     </div>

@@ -20,7 +20,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="white"
           enableSystem
           disableTransitionOnChange
         >
