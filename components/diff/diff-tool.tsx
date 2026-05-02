@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { DiffProvider, useDiffContext } from './diff-context';
 import { DiffEditor } from './diff-editor';
 import { DiffToolbar } from './diff-toolbar';
 import { DiffViewer } from './diff-viewer';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { CheckCircle2, Globe, FileJson } from 'lucide-react';
+import { CheckCircle2, Globe, FileJson, Download, Maximize2, Minimize2 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/components/i18n/language-context';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShortcutsPopover } from './shortcuts-popover';
+import { CommandPalette } from '@/components/command-palette';
+import { FullscreenToggle } from '@/components/fullscreen-toggle';
+import { PresetManager } from '@/components/preset-manager';
+import { computeDiffStats, generateMergedText } from '@/lib/diff-utils';
 
 function DiffToolInner() {
   const {
@@ -24,15 +27,29 @@ function DiffToolInner() {
     settings,
     setOriginalText,
     setModifiedText,
+    updateSettings,
   } = useDiffContext();
-  const { t, language, setLanguage } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   const [diffResult, setDiffResult] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [syncScroll, setSyncScroll] = useState(true);
-  const [showShareWarning, setShowShareWarning] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [mergeMode, setMergeMode] = useState(false);
+  const [mergeDecisions, setMergeDecisions] = useState<Map<number, 'left' | 'right' | 'both' | 'discard'>>(new Map());
+  const [shareUrl, setShareUrl] = useState('');
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [distractionFree, setDistractionFree] = useState(false);
+  const [reorderDetection, setReorderDetection] = useState(false);
+  const [similarityHeatmap, setSimilarityHeatmap] = useState(false);
 
-  // Load shared data from URL hash on mount
+  const stats = useMemo(() => {
+    if (!diffResult && !originalText && !modifiedText) return null;
+    return computeDiffStats(originalText, modifiedText, { ignoreWhitespace: settings.ignoreWhitespace, ignoreCase: settings.ignoreCase });
+  }, [originalText, modifiedText, settings.ignoreWhitespace, settings.ignoreCase]);
+
+  // Load shared URL with expiry check
   useEffect(() => {
     if (!isLoaded) return;
     try {
@@ -42,17 +59,19 @@ function DiffToolInner() {
       const decompressed = LZString.decompressFromEncodedURIComponent(hash);
       if (!decompressed) return;
       const data = JSON.parse(decompressed);
+      if (data.expiry && Date.now() > data.expiry) {
+        alert(t('share_expired'));
+        window.location.hash = '';
+        return;
+      }
       if (data.originalText !== undefined) setOriginalText(data.originalText);
       if (data.modifiedText !== undefined) setModifiedText(data.modifiedText);
-      if (data.settings) {
-        // updateSettings is not available in this scope; we'll just set settings via the context's updateSettings.
-        // Actually, we need to use updateSettings from context. Let's import useDiffContext already gives updateSettings. I'll add it.
-      }
+      if (data.settings) updateSettings(data.settings);
       window.location.hash = '';
     } catch (e) {
-      console.error('Failed to parse shared diff:', e);
+      // silently ignore
     }
-  }, [isLoaded, setOriginalText, setModifiedText]); // added dependencies
+  }, [isLoaded, setOriginalText, setModifiedText, updateSettings, t]);
 
   const generateDiffText = useCallback(() => {
     if (!diffResult) return '';
@@ -79,7 +98,7 @@ function DiffToolInner() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      // ignore
     }
   }, [generateDiffText]);
 
@@ -107,21 +126,51 @@ function DiffToolInner() {
     URL.revokeObjectURL(url);
   };
 
-  const handleShare = async () => {
+  const handleShareWithExpiry = async (hours: number) => {
+    const expiry = hours > 0 ? Date.now() + hours * 3600000 : 0;
     const LZString = (await import('lz-string')).default;
-    const data = {
-      originalText,
-      modifiedText,
-      settings,
-    };
+    const data = { originalText, modifiedText, settings, expiry };
     const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
     const url = `${window.location.origin}${window.location.pathname}#${compressed}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setShowShareWarning(compressed.length > 2000);
-      setTimeout(() => setShowShareWarning(false), 3000);
-    } catch (err) {
-      console.error(err);
+    await navigator.clipboard.writeText(url);
+    setShareUrl(url);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleMergeDecision = useCallback((rowIndex: number, decision: 'left' | 'right' | 'both' | 'discard') => {
+    setMergeDecisions(prev => {
+      const newMap = new Map(prev);
+      newMap.set(rowIndex, decision);
+      return newMap;
+    });
+  }, []);
+
+  const mergedText = useMemo(() => {
+    if (!diffResult) return '';
+    return generateMergedText(diffResult.rows, mergeDecisions);
+  }, [diffResult, mergeDecisions]);
+
+  const handleDownloadMerged = () => {
+    const blob = new Blob([mergedText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'merged.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      setFullscreen(false);
+      setDistractionFree(false);
+    } else {
+      document.documentElement.requestFullscreen();
+      setFullscreen(true);
     }
   };
 
@@ -143,6 +192,10 @@ function DiffToolInner() {
         originalHistory.reset(modifiedText);
         modifiedHistory.reset(temp);
       }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -150,9 +203,20 @@ function DiffToolInner() {
 
   if (!isLoaded) return null;
 
+  // Command palette actions
+  const commandActions = [
+    { id: 'clear', label: t('clear'), onSelect: () => handleCopyDiff() },
+    { id: 'swap', label: t('swap'), onSelect: () => { const temp = originalText; originalHistory.reset(modifiedText); modifiedHistory.reset(temp); } },
+    { id: 'word-diff', label: t('word_diff'), onSelect: () => updateSettings({ wordLevelDiff: !settings.wordLevelDiff }) },
+    { id: 'split-view', label: t('split'), onSelect: () => updateSettings({ viewMode: 'split' }) },
+    { id: 'unified-view', label: t('unified'), onSelect: () => updateSettings({ viewMode: 'unified' }) },
+    { id: 'inline-view', label: t('inline'), onSelect: () => updateSettings({ viewMode: 'inline' }) },
+    { id: 'fullscreen', label: fullscreen ? t('exit_fullscreen') : t('fullscreen'), onSelect: toggleFullscreen },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold tracking-tight">{t('app_title')}</h1>
@@ -169,33 +233,18 @@ function DiffToolInner() {
                 <Globe className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-accent' : ''}>
-                  English
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('ar')} className={language === 'ar' ? 'bg-accent' : ''}>
-                  العربية
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('es')} className={language === 'es' ? 'bg-accent' : ''}>
-                  Español
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('fr')} className={language === 'fr' ? 'bg-accent' : ''}>
-                  Français
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('de')} className={language === 'de' ? 'bg-accent' : ''}>
-                  Deutsch
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('ru')} className={language === 'ru' ? 'bg-accent' : ''}>
-                  Русский
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('ku')} className={language === 'ku' ? 'bg-accent' : ''}>
-                  Kurdî
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('zh')} className={language === 'zh' ? 'bg-accent' : ''}>
-                  中文
-                </DropdownMenuItem>
+                {['en','ar','es','fr','de','ru','ku','zh'].map((lng) => (
+                  <DropdownMenuItem key={lng} onClick={() => setLanguage(lng as any)}>
+                    {lng.toUpperCase()}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             <ShortcutsPopover />
+            <FullscreenToggle fullscreen={fullscreen} onToggle={toggleFullscreen} />
+            <Button variant="ghost" size="icon" onClick={() => { setDistractionFree(!distractionFree); document.body.classList.toggle('distraction-free', !distractionFree); }} title={t('distraction_free')}>
+              {distractionFree ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -206,15 +255,6 @@ function DiffToolInner() {
 
         {diffResult && (diffResult.addedLinesCount > 0 || diffResult.removedLinesCount > 0 || diffResult.unchangedLinesCount > 0) && (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-              {showShareWarning && (
-                <span className="text-xs text-yellow-600">{t('share_warning')}</span>
-              )}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground px-2">
-                {/* Empty now, but could hold other content */}
-              </div>
-            </div>
-
             <DiffToolbar
               onCopy={handleCopyDiff}
               onExportTxt={handleExportText}
@@ -224,13 +264,30 @@ function DiffToolInner() {
               onSearchChange={setSearchQuery}
               syncScroll={syncScroll}
               onSyncScrollChange={setSyncScroll}
-              onShare={handleShare}
+              showMinimap={showMinimap}
+              onToggleMinimap={() => setShowMinimap(!showMinimap)}
+              mergeMode={mergeMode}
+              onToggleMergeMode={() => setMergeMode(!mergeMode)}
+              onPrint={handlePrint}
+              onShareWithExpiry={handleShareWithExpiry}
+              shareUrl={shareUrl}
+              stats={stats}
+              reorderDetection={reorderDetection}
+              onReorderDetectionChange={setReorderDetection}
+              similarityHeatmap={similarityHeatmap}
+              onSimilarityHeatmapChange={setSimilarityHeatmap}
             />
 
             <DiffViewer
               onResult={setDiffResult}
               searchQuery={searchQuery}
               syncScroll={syncScroll}
+              showMinimap={showMinimap}
+              mergeMode={mergeMode}
+              mergeDecisions={mergeDecisions}
+              onMergeDecision={handleMergeDecision}
+              reorderDetection={reorderDetection}
+              similarityHeatmap={similarityHeatmap}
               onEditOriginal={(lineNum: number, newValue: string) => {
                 const lines = originalText.split('\n');
                 if (lineNum >= 1 && lineNum <= lines.length) {
@@ -246,17 +303,45 @@ function DiffToolInner() {
                 }
               }}
             />
+
+            {mergeMode && (
+              <div className="mt-4 border border-border rounded-xl p-4 bg-card shadow-sm no-print">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">{t('merged_result')}</h3>
+                  <Button variant="outline" size="sm" onClick={handleDownloadMerged}>
+                    <Download className="w-4 h-4 me-2" /> {t('download_merged')}
+                  </Button>
+                </div>
+                <textarea
+                  value={mergedText}
+                  readOnly
+                  className="w-full h-64 bg-muted/30 rounded-lg p-4 font-mono text-sm resize-y border border-border"
+                />
+              </div>
+            )}
           </div>
         )}
 
         {(!diffResult || (diffResult.addedLinesCount === 0 && diffResult.removedLinesCount === 0 && diffResult.unchangedLinesCount === 0)) && (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground animate-in fade-in duration-500 border-2 border-dashed border-border/50 rounded-xl bg-muted/10">
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground animate-in fade-in duration-500 border-2 border-dashed border-border/50 rounded-xl bg-muted/10 no-print">
             <FileJson className="w-12 h-12 mb-4 opacity-20" />
             <p className="text-sm">{t('empty_state_msg')}</p>
-            <div className="hidden"><DiffViewer onResult={setDiffResult} searchQuery="" syncScroll={false} /></div>
+            <div className="hidden">
+              <DiffViewer
+                onResult={setDiffResult}
+                searchQuery=""
+                syncScroll={false}
+                showMinimap={false}
+                mergeMode={false}
+                mergeDecisions={new Map()}
+                onMergeDecision={() => {}}
+              />
+            </div>
           </div>
         )}
       </main>
+
+      <CommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} actions={commandActions} />
     </div>
   );
 }

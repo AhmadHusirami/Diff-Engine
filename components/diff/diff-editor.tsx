@@ -3,12 +3,13 @@
 import React, { useRef, useState } from 'react';
 import { useDiffContext } from './diff-context';
 import { Button } from '@/components/ui/button';
-import { Undo2, Redo2, ArrowLeftRight, Trash2, Upload, FileJson, Wand2, Link } from 'lucide-react';
+import { Undo2, Redo2, ArrowLeftRight, Trash2, Upload, FileJson, Wand2, Link, GitBranch } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/components/i18n/language-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
+import { fetchGistContent } from '@/lib/gist-api';
 
 export function DiffEditor() {
   const {
@@ -29,6 +30,11 @@ export function DiffEditor() {
   const [modifiedUrl, setModifiedUrl] = useState('');
   const [isOriginalUrlOpen, setIsOriginalUrlOpen] = useState(false);
   const [isModifiedUrlOpen, setIsModifiedUrlOpen] = useState(false);
+  const [isGistOpen, setIsGistOpen] = useState(false);
+  const [gistUrl, setGistUrl] = useState('');
+
+  const [dragOverOriginal, setDragOverOriginal] = useState(false);
+  const [dragOverModified, setDragOverModified] = useState(false);
 
   const handleLoadUrl = async (url: string, setter: (val: string) => void, closePopover: () => void) => {
     if (!url) return;
@@ -39,8 +45,17 @@ export function DiffEditor() {
       setter(text);
       closePopover();
     } catch (e) {
-      console.error(e);
-      // Could add toast here
+      // silently fail
+    }
+  };
+
+  const handleLoadGist = async (setter: (val: string) => void) => {
+    try {
+      const content = await fetchGistContent(gistUrl);
+      setter(content);
+      setIsGistOpen(false);
+    } catch (e) {
+      // fail silently
     }
   };
 
@@ -58,24 +73,54 @@ export function DiffEditor() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string) => void) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
       setter(content);
     };
     reader.readAsText(file);
-    // Reset input so the same file can be uploaded again if needed
     e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDropOriginal = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverOriginal(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setOriginalText(ev.target?.result as string);
+      };
+      reader.readAsText(files[0]);
+    }
+  };
+
+  const handleDropModified = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverModified(false);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setModifiedText(ev.target?.result as string);
+      };
+      reader.readAsText(files[0]);
+    }
   };
 
   const formatJSON = (text: string, setter: (val: string) => void) => {
     try {
       const parsed = JSON.parse(text);
       setter(JSON.stringify(parsed, null, 2));
-    } catch (e) {
-      // Not valid JSON, do nothing or show toast
-      console.warn("Invalid JSON");
+    } catch {
+      // Not valid JSON – ignore
     }
   };
 
@@ -112,7 +157,7 @@ export function DiffEditor() {
   const modifiedStats = getStats(modifiedText);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 no-print">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-lg font-semibold tracking-tight">{t('input_texts')}</h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -129,7 +174,12 @@ export function DiffEditor() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Original Text Panel */}
-        <Card className="flex flex-col overflow-hidden border-border shadow-sm rounded-xl">
+        <Card
+          className={`flex flex-col overflow-hidden border-border shadow-sm rounded-xl ${dragOverOriginal ? 'ring-2 ring-primary' : ''}`}
+          onDragOver={(e) => { handleDragOver(e); setDragOverOriginal(true); }}
+          onDragLeave={() => setDragOverOriginal(false)}
+          onDrop={(e) => { handleDropOriginal(e); }}
+        >
           <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
             <span className="text-sm font-medium text-muted-foreground">{t('original_text')}</span>
             <div className="flex items-center gap-1">
@@ -167,13 +217,28 @@ export function DiffEditor() {
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-3">
                   <div className="flex gap-2">
-                    <Input 
-                      placeholder="https://..." 
-                      value={originalUrl} 
+                    <Input
+                      placeholder="https://..."
+                      value={originalUrl}
                       onChange={(e) => setOriginalUrl(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleLoadUrl(originalUrl, setOriginalText, () => setIsOriginalUrlOpen(false))}
                     />
                     <Button onClick={() => handleLoadUrl(originalUrl, setOriginalText, () => setIsOriginalUrlOpen(false))}>{t('load_url')}</Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Popover open={isGistOpen} onOpenChange={setIsGistOpen}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('import_gist')} />}>
+                  <GitBranch className="w-3.5 h-3.5" />
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-3">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Gist URL or ID"
+                      value={gistUrl}
+                      onChange={(e) => setGistUrl(e.target.value)}
+                    />
+                    <Button onClick={() => handleLoadGist(setOriginalText)}>{t('import_gist')}</Button>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -208,12 +273,18 @@ export function DiffEditor() {
               </Button>
             </div>
           </div>
-          <textarea
-            value={originalText}
-            onChange={(e) => setOriginalText(e.target.value)}
-            placeholder={t('paste_original')}
-            className={`flex-1 min-h-[250px] p-4 bg-transparent resize-y font-mono text-sm focus:outline-none focus:bg-muted/10 transition-colors ${settings.wordWrap ? 'whitespace-pre-wrap' : 'whitespace-pre overflow-x-auto'}`}
-          />
+          {dragOverOriginal ? (
+            <div className="flex-1 flex items-center justify-center border-2 border-dashed border-primary rounded-b-xl m-2 bg-primary/5">
+              <p className="text-sm text-muted-foreground">{t('drop_files_here')}</p>
+            </div>
+          ) : (
+            <textarea
+              value={originalText}
+              onChange={(e) => setOriginalText(e.target.value)}
+              placeholder={t('paste_original')}
+              className={`flex-1 min-h-[250px] p-4 bg-transparent resize-y font-mono text-sm focus:outline-none focus:bg-muted/10 transition-colors ${settings.wordWrap ? 'whitespace-pre-wrap' : 'whitespace-pre overflow-x-auto'}`}
+            />
+          )}
           <div className="px-4 py-1.5 bg-muted/30 border-t border-border text-xs text-muted-foreground flex justify-between">
             <span>{originalStats.lines} {t('lines')}</span>
             <span>{originalStats.words} {t('words')}</span>
@@ -222,7 +293,12 @@ export function DiffEditor() {
         </Card>
 
         {/* Modified Text Panel */}
-        <Card className="flex flex-col overflow-hidden border-border shadow-sm rounded-xl">
+        <Card
+          className={`flex flex-col overflow-hidden border-border shadow-sm rounded-xl ${dragOverModified ? 'ring-2 ring-primary' : ''}`}
+          onDragOver={(e) => { handleDragOver(e); setDragOverModified(true); }}
+          onDragLeave={() => setDragOverModified(false)}
+          onDrop={(e) => { handleDropModified(e); }}
+        >
           <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
             <span className="text-sm font-medium text-muted-foreground">{t('modified_text')}</span>
             <div className="flex items-center gap-1">
@@ -260,13 +336,28 @@ export function DiffEditor() {
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-3">
                   <div className="flex gap-2">
-                    <Input 
-                      placeholder="https://..." 
-                      value={modifiedUrl} 
+                    <Input
+                      placeholder="https://..."
+                      value={modifiedUrl}
                       onChange={(e) => setModifiedUrl(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleLoadUrl(modifiedUrl, setModifiedText, () => setIsModifiedUrlOpen(false))}
                     />
                     <Button onClick={() => handleLoadUrl(modifiedUrl, setModifiedText, () => setIsModifiedUrlOpen(false))}>{t('load_url')}</Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Popover open={isGistOpen} onOpenChange={setIsGistOpen}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('import_gist')} />}>
+                  <GitBranch className="w-3.5 h-3.5" />
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-3">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Gist URL or ID"
+                      value={gistUrl}
+                      onChange={(e) => setGistUrl(e.target.value)}
+                    />
+                    <Button onClick={() => handleLoadGist(setModifiedText)}>{t('import_gist')}</Button>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -301,12 +392,18 @@ export function DiffEditor() {
               </Button>
             </div>
           </div>
-          <textarea
-            value={modifiedText}
-            onChange={(e) => setModifiedText(e.target.value)}
-            placeholder={t('paste_modified')}
-            className={`flex-1 min-h-[250px] p-4 bg-transparent resize-y font-mono text-sm focus:outline-none focus:bg-muted/10 transition-colors ${settings.wordWrap ? 'whitespace-pre-wrap' : 'whitespace-pre overflow-x-auto'}`}
-          />
+          {dragOverModified ? (
+            <div className="flex-1 flex items-center justify-center border-2 border-dashed border-primary rounded-b-xl m-2 bg-primary/5">
+              <p className="text-sm text-muted-foreground">{t('drop_files_here')}</p>
+            </div>
+          ) : (
+            <textarea
+              value={modifiedText}
+              onChange={(e) => setModifiedText(e.target.value)}
+              placeholder={t('paste_modified')}
+              className={`flex-1 min-h-[250px] p-4 bg-transparent resize-y font-mono text-sm focus:outline-none focus:bg-muted/10 transition-colors ${settings.wordWrap ? 'whitespace-pre-wrap' : 'whitespace-pre overflow-x-auto'}`}
+            />
+          )}
           <div className="px-4 py-1.5 bg-muted/30 border-t border-border text-xs text-muted-foreground flex justify-between">
             <span>{modifiedStats.lines} {t('lines')}</span>
             <span>{modifiedStats.words} {t('words')}</span>

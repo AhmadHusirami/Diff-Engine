@@ -46,7 +46,49 @@
 .theme-prism .token.function, .theme-prism .token.class-name { color: #dd4a68; }
 .theme-prism .token.regex, .theme-prism .token.important, .theme-prism .token.variable { color: #e90; }
 
-@theme inline { --font-heading: var(--font-sans); --font-sans: var(--font-sans); --font-mono: var(--font-mono); --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
+@theme inline { 
+  --font-heading: var(--font-sans); 
+  --font-sans: var(--font-sans); 
+  --font-mono: var(--font-mono); 
+  --color-sidebar-ring: var(--sidebar-ring); 
+  --color-sidebar-border: var(--sidebar-border); 
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); 
+  --color-sidebar-accent: var(--sidebar-accent); 
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); 
+  --color-sidebar-primary: var(--sidebar-primary); 
+  --color-sidebar-foreground: var(--sidebar-foreground); 
+  --color-sidebar: var(--sidebar); 
+  --color-chart-5: var(--chart-5); 
+  --color-chart-4: var(--chart-4); 
+  --color-chart-3: var(--chart-3); 
+  --color-chart-2: var(--chart-2); 
+  --color-chart-1: var(--chart-1); 
+  --color-ring: var(--ring); 
+  --color-input: var(--input); 
+  --color-border: var(--border); 
+  --color-destructive: var(--destructive); 
+  --color-accent-foreground: var(--accent-foreground); 
+  --color-accent: var(--accent); 
+  --color-muted-foreground: var(--muted-foreground); 
+  --color-muted: var(--muted); 
+  --color-secondary-foreground: var(--secondary-foreground); 
+  --color-secondary: var(--secondary); 
+  --color-primary-foreground: var(--primary-foreground); 
+  --color-primary: var(--primary); 
+  --color-popover-foreground: var(--popover-foreground); 
+  --color-popover: var(--popover); 
+  --color-card-foreground: var(--card-foreground); 
+  --color-card: var(--card); 
+  --color-foreground: var(--foreground); 
+  --color-background: var(--background); 
+  --radius-sm: calc(var(--radius) * 0.6); 
+  --radius-md: calc(var(--radius) * 0.8); 
+  --radius-lg: var(--radius); 
+  --radius-xl: calc(var(--radius) * 1.4); 
+  --radius-2xl: calc(var(--radius) * 1.8); 
+  --radius-3xl: calc(var(--radius) * 2.2); 
+  --radius-4xl: calc(var(--radius) * 2.6); 
+}
 
 :root {
   --background: oklch(0.98 0 0);
@@ -117,10 +159,101 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* High‑contrast theme (light) */
+.high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f0;
+  --secondary-foreground: #000000;
+  --muted: #f0f0f0;
+  --muted-foreground: #000000;
+  --accent: #ffcc00;
+  --accent-foreground: #000000;
+  --destructive: #ff0000;
+  --border: #000000;
+  --input: #000000;
+  --ring: #000000;
+}
+
+/* High‑contrast theme (dark) */
+.high-contrast-dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #333333;
+  --secondary-foreground: #ffffff;
+  --muted: #333333;
+  --muted-foreground: #ffffff;
+  --accent: #ffcc00;
+  --accent-foreground: #000000;
+  --destructive: #ff4444;
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #ffffff;
+}
+
+/* Print styles */
+@media print {
+  .no-print, header, .diff-toolbar, .diff-editor, .sidebar, nav, footer, button, .dropdown-menu, .popover, .tooltip, .settings-popover, .shortcuts-popover {
+    display: none !important;
+  }
+  body, .printable-diff {
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+  }
+  .diff-pane {
+    overflow: visible !important;
+    height: auto !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .diff-change {
+    background: none !important;
+    color: inherit !important;
+  }
+  .line-through {
+    text-decoration: line-through;
+  }
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50; }
+    @apply border-border outline-ring/50;
+  }
   body {
-    @apply bg-background text-foreground; }
+    @apply bg-background text-foreground;
+  }
   html {
-    @apply font-sans; } }
+    @apply font-sans;
+  }
+}
+
+/* Prevent scrollbar disappearing on Base UI select/popover open */
+html, body {
+  overflow: auto !important;
+}
+
+/* Full‑screen distraction‑free mode */
+body.distraction-free header,
+body.distraction-free .diff-toolbar,
+body.distraction-free .no-print {
+  display: none !important;
+}

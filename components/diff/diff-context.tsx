@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useHistory } from '@/hooks/use-history';
 
 export type DiffSettings = {
@@ -19,6 +19,11 @@ export type DiffSettings = {
     removedBg: string;
     removedText: string;
   };
+};
+
+export type SettingsPreset = {
+  name: string;
+  settings: DiffSettings;
 };
 
 const DEFAULT_SETTINGS: DiffSettings = {
@@ -43,7 +48,7 @@ type DiffContextType = {
   originalText: string;
   setOriginalText: (val: string | ((prev: string) => string)) => void;
   originalHistory: { undo: () => void; redo: () => void; canUndo: boolean; canRedo: boolean; reset: (val: string) => void };
-  
+
   modifiedText: string;
   setModifiedText: (val: string | ((prev: string) => string)) => void;
   modifiedHistory: { undo: () => void; redo: () => void; canUndo: boolean; canRedo: boolean; reset: (val: string) => void };
@@ -53,6 +58,11 @@ type DiffContextType = {
 
   isSaved: boolean;
   isLoaded: boolean;
+
+  presets: SettingsPreset[];
+  savePreset: (name: string) => void;
+  deletePreset: (name: string) => void;
+  loadPreset: (name: string) => void;
 };
 
 const DiffContext = createContext<DiffContextType | undefined>(undefined);
@@ -63,12 +73,13 @@ export function DiffProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<DiffSettings>(DEFAULT_SETTINGS);
   const [isSaved, setIsSaved] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [presets, setPresets] = useState<SettingsPreset[]>([]);
 
-  // Load from local storage on mount
   useEffect(() => {
     const savedOrig = localStorage.getItem('diff_originalText');
     const savedMod = localStorage.getItem('diff_modifiedText');
     const savedSettings = localStorage.getItem('diff_settings');
+    const savedPresets = localStorage.getItem('diff_presets');
 
     setTimeout(() => {
       if (savedOrig) originalHistory.reset(savedOrig);
@@ -80,12 +91,17 @@ export function DiffProvider({ children }: { children: ReactNode }) {
           console.error('Failed to parse settings', e);
         }
       }
+      if (savedPresets) {
+        try {
+          setPresets(JSON.parse(savedPresets));
+        } catch (e) {
+          console.error('Failed to parse presets', e);
+        }
+      }
       setIsLoaded(true);
     }, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save to local storage on change
   useEffect(() => {
     if (isLoaded) {
       setTimeout(() => setIsSaved(false), 0);
@@ -93,15 +109,34 @@ export function DiffProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('diff_originalText', originalText);
         localStorage.setItem('diff_modifiedText', modifiedText);
         localStorage.setItem('diff_settings', JSON.stringify(settings));
+        localStorage.setItem('diff_presets', JSON.stringify(presets));
         setIsSaved(true);
-      }, 500); // debounce save
+      }, 500);
       return () => clearTimeout(timer);
     }
-  }, [originalText, modifiedText, settings, isLoaded]);
+  }, [originalText, modifiedText, settings, presets, isLoaded]);
 
   const updateSettings = (newSettings: Partial<DiffSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
+
+  const savePreset = useCallback((name: string) => {
+    setPresets((prev) => {
+      const filtered = prev.filter((p) => p.name !== name);
+      return [...filtered, { name, settings }];
+    });
+  }, [settings]);
+
+  const deletePreset = useCallback((name: string) => {
+    setPresets((prev) => prev.filter((p) => p.name !== name));
+  }, []);
+
+  const loadPreset = useCallback((name: string) => {
+    const preset = presets.find((p) => p.name === name);
+    if (preset) {
+      setSettings(preset.settings);
+    }
+  }, [presets]);
 
   return (
     <DiffContext.Provider
@@ -116,6 +151,10 @@ export function DiffProvider({ children }: { children: ReactNode }) {
         updateSettings,
         isSaved,
         isLoaded,
+        presets,
+        savePreset,
+        deletePreset,
+        loadPreset,
       }}
     >
       {children}

@@ -5,7 +5,8 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 export function ThemeProvider({
   children,
+  themes = ['light', 'dark', 'system'],
   ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}: React.ComponentProps<typeof NextThemesProvider> & { themes?: string[] }) {
+  return <NextThemesProvider themes={themes} {...props}>{children}</NextThemesProvider>
 }
