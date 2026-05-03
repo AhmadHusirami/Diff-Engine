@@ -1,4 +1,6 @@
-const translations = {
+import type { TranslationDict } from "./en";
+
+const translations: TranslationDict = {
   app_title: "Herramienta de Diferencias",
   saved: "Guardado",
   input_texts: "Textos de Entrada",
@@ -76,6 +78,23 @@ const translations = {
   stats_title: "Estadísticas de comparación",
   drop_files_here: "Suelta los archivos aquí",
   drag_drop_hint: "o haz clic para cargar",
+  share_expired: "El enlace compartido ha caducado.",
+  import_gist: "Importar desde Gist",
+  export_html: "HTML con estilo",
+  export_markdown: "Markdown",
+  type_command: "Escribe un comando...",
+  fullscreen: "Pantalla completa",
+  exit_fullscreen: "Salir de pantalla completa",
+  distraction_free: "Sin distracciones",
+  presets: "Ajustes predefinidos",
+  preset_name: "Nombre del ajuste",
+  load_preset: "Cargar ajuste",
+  delete_preset: "Eliminar ajuste",
+  reorder_detection: "Detección de reordenamiento",
+  similarity_heatmap: "Mapa de calor de similitud",
+  swipe_hint: "Desliza izquierda/derecha para aceptar",
+  expiry_hours: "Expira (horas, 0 = nunca)",
+  share: "Compartir",
 };
 
 export default translations;

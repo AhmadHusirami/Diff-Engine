@@ -1,5 +1,15 @@
 {
-  "name": "Text Diff Tool",
-  "description": "Compare and visualize differences between two pieces of text.",
+  "name": "Text Diff Engine",
+  "description": "Compare, inspect, and visualize text differences with side-by-side, unified, and inline diff views.",
+  "keywords": [
+    "text diff",
+    "diff tool",
+    "compare text",
+    "code diff",
+    "json diff",
+    "word diff",
+    "line by line compare",
+    "text comparison"
+  ],
   "requestFramePermissions": []
 }

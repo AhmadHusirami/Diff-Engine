@@ -18,10 +18,10 @@ export function ShareExpiryPopover({ onShare, shareUrl, children }: Props) {
   return (
     <Popover>
       <PopoverTrigger render={children} />
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-[min(20rem,calc(100vw-2rem))]">
         <div className="space-y-4">
           <h4 className="font-medium">{t('share_link')}</h4>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
             <Clock className="w-4 h-4" />
             <Label>{t('expiry_hours')}:</Label>
             <Input type="number" min={0} value={hours} onChange={e => setHours(Number(e.target.value))} className="w-20" />

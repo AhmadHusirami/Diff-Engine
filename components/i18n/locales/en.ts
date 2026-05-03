@@ -1,5 +1,5 @@
 const translations = {
-  app_title: "Text Diff Tool",
+  app_title: "Text Diff Engine",
   saved: "Saved",
   input_texts: "Input Texts",
   clear: "Clear",
@@ -95,4 +95,7 @@ const translations = {
   share: "Share",
 };
 
-export default translations;
+export type TranslationKey = keyof typeof translations;
+export type TranslationDict = Record<TranslationKey, string>;
+
+export default translations satisfies TranslationDict;

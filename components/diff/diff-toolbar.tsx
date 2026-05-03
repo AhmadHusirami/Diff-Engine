@@ -122,8 +122,8 @@ export function DiffToolbar({
 
   return (
     <div className="sticky top-16 z-20 flex flex-col gap-3 p-3 rounded-xl bg-card border border-border shadow-sm overflow-hidden diff-toolbar no-print">
-      <div className="flex items-center justify-between gap-4 overflow-x-auto pb-1 scrollbar-hide">
-        <div className="flex items-center gap-2 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide">
           <Select value={settings.language} onValueChange={(val) => updateSettings({ language: val })}>
             <SelectTrigger className="w-[140px] h-9 bg-muted/50 border-border hover:bg-muted transition-colors">
               <SelectValue placeholder={t('language')} />
@@ -172,7 +172,7 @@ export function DiffToolbar({
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              className="w-40 h-9 pl-8 pr-2 text-sm"
+              className="w-32 sm:w-40 h-9 pl-8 pr-2 text-sm"
               placeholder={t('search_placeholder')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -232,8 +232,8 @@ export function DiffToolbar({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        <div className="flex items-center gap-2 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide">
           <div className="flex items-center bg-muted/50 p-1 rounded-lg border border-border/50">
             <Tooltip>
               <TooltipTrigger render={<Button variant={settings.wordLevelDiff ? 'default' : 'ghost'} size="sm" className="h-7 px-2 gap-2" onClick={() => updateSettings({ wordLevelDiff: !settings.wordLevelDiff })} />}>
@@ -380,33 +380,33 @@ export function DiffToolbar({
             <PopoverTrigger render={<Button variant="outline" size="icon" className="h-9 w-9" />}>
               <Settings2 className="w-4 h-4" />
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-80">
-              <div className="flex flex-col gap-6">
+            <PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
+              <div className="flex flex-col gap-6 text-[13px]">
                 <div className="space-y-1">
                   <h4 className="font-semibold leading-none">{t('diff_settings')}</h4>
-                  <p className="text-sm text-muted-foreground">{t('diff_settings_desc')}</p>
+                  <p className="text-xs text-muted-foreground">{t('diff_settings_desc')}</p>
                 </div>
                 <div className="space-y-3">
                   <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('diff_options')}</h5>
                   <div className="grid gap-3">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="word-level-diff" className="flex-1 cursor-pointer">{t('word_diff')}</Label>
+                      <Label htmlFor="word-level-diff" className="flex-1 cursor-pointer text-[13px]">{t('word_diff')}</Label>
                       <Switch id="word-level-diff" checked={settings.wordLevelDiff} onCheckedChange={(c) => updateSettings({ wordLevelDiff: c })} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="ignore-whitespace" className="flex-1 cursor-pointer">{t('ignore_whitespace')}</Label>
+                      <Label htmlFor="ignore-whitespace" className="flex-1 cursor-pointer text-[13px]">{t('ignore_whitespace')}</Label>
                       <Switch id="ignore-whitespace" checked={settings.ignoreWhitespace} onCheckedChange={(c) => updateSettings({ ignoreWhitespace: c })} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="ignore-case" className="flex-1 cursor-pointer">{t('ignore_case')}</Label>
+                      <Label htmlFor="ignore-case" className="flex-1 cursor-pointer text-[13px]">{t('ignore_case')}</Label>
                       <Switch id="ignore-case" checked={settings.ignoreCase} onCheckedChange={(c) => updateSettings({ ignoreCase: c })} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="collapse-unchanged" className="flex-1 cursor-pointer">{t('collapse_unchanged')}</Label>
+                      <Label htmlFor="collapse-unchanged" className="flex-1 cursor-pointer text-[13px]">{t('collapse_unchanged')}</Label>
                       <Switch id="collapse-unchanged" checked={settings.collapseUnchanged} onCheckedChange={(c) => updateSettings({ collapseUnchanged: c })} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="word-wrap" className="flex-1 cursor-pointer">{t('word_wrap')}</Label>
+                      <Label htmlFor="word-wrap" className="flex-1 cursor-pointer text-[13px]">{t('word_wrap')}</Label>
                       <Switch id="word-wrap" checked={settings.wordWrap} onCheckedChange={(c) => updateSettings({ wordWrap: c })} />
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export function DiffToolbar({
                 <div className="space-y-3">
                   <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('syntax_highlighting')}</h5>
                   <div className="flex items-center justify-between gap-2">
-                    <Label>{t('syntax_theme')}</Label>
+                    <Label className="text-[13px]">{t('syntax_theme')}</Label>
                     <Select value={settings.syntaxTheme} onValueChange={(v) => updateSettings({ syntaxTheme: v })}>
                       <SelectTrigger className="h-9 bg-muted/50 w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>

@@ -6,14 +6,13 @@ import { DiffEditor } from './diff-editor';
 import { DiffToolbar } from './diff-toolbar';
 import { DiffViewer } from './diff-viewer';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { CheckCircle2, Globe, FileJson, Download, Maximize2, Minimize2 } from 'lucide-react';
+import { CheckCircle2, Globe, FileJson, Download } from 'lucide-react';
 import { LanguageProvider, useLanguage } from '@/components/i18n/language-context';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ShortcutsPopover } from './shortcuts-popover';
 import { CommandPalette } from '@/components/command-palette';
 import { FullscreenToggle } from '@/components/fullscreen-toggle';
-import { PresetManager } from '@/components/preset-manager';
 import { computeDiffStats, generateMergedText } from '@/lib/diff-utils';
 
 function DiffToolInner() {
@@ -40,12 +39,11 @@ function DiffToolInner() {
   const [shareUrl, setShareUrl] = useState('');
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [distractionFree, setDistractionFree] = useState(false);
   const [reorderDetection, setReorderDetection] = useState(false);
   const [similarityHeatmap, setSimilarityHeatmap] = useState(false);
 
   const stats = useMemo(() => {
-    if (!diffResult && !originalText && !modifiedText) return null;
+    if (!originalText && !modifiedText) return null;
     return computeDiffStats(originalText, modifiedText, { ignoreWhitespace: settings.ignoreWhitespace, ignoreCase: settings.ignoreCase });
   }, [originalText, modifiedText, settings.ignoreWhitespace, settings.ignoreCase]);
 
@@ -167,7 +165,6 @@ function DiffToolInner() {
     if (document.fullscreenElement) {
       document.exitFullscreen();
       setFullscreen(false);
-      setDistractionFree(false);
     } else {
       document.documentElement.requestFullscreen();
       setFullscreen(true);
@@ -217,9 +214,9 @@ function DiffToolInner() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30 no-print">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold tracking-tight">{t('app_title')}</h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 py-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <h1 className="text-base sm:text-xl font-semibold tracking-tight truncate">{t('app_title')}</h1>
             {isSaved && (
               <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full animate-in fade-in duration-300">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
@@ -227,7 +224,7 @@ function DiffToolInner() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-9 w-9" />}>
                 <Globe className="w-4 h-4" />
@@ -242,15 +239,12 @@ function DiffToolInner() {
             </DropdownMenu>
             <ShortcutsPopover />
             <FullscreenToggle fullscreen={fullscreen} onToggle={toggleFullscreen} />
-            <Button variant="ghost" size="icon" onClick={() => { setDistractionFree(!distractionFree); document.body.classList.toggle('distraction-free', !distractionFree); }} title={t('distraction_free')}>
-              {distractionFree ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </Button>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col gap-6 sm:gap-8">
         <DiffEditor />
 
         {diffResult && (diffResult.addedLinesCount > 0 || diffResult.removedLinesCount > 0 || diffResult.unchangedLinesCount > 0) && (

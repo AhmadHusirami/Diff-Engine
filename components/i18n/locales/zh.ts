@@ -1,4 +1,6 @@
-const translations = {
+import type { TranslationDict } from "./en";
+
+const translations: TranslationDict = {
   app_title: "文本差异工具",
   saved: "已保存",
   input_texts: "输入文本",
@@ -76,6 +78,23 @@ const translations = {
   stats_title: "比较统计",
   drop_files_here: "将文件拖放到此处",
   drag_drop_hint: "或点击上传",
+  share_expired: "分享链接已过期",
+  import_gist: "从 Gist 导入",
+  export_html: "样式化 HTML",
+  export_markdown: "Markdown",
+  type_command: "输入命令...",
+  fullscreen: "全屏",
+  exit_fullscreen: "退出全屏",
+  distraction_free: "免打扰模式",
+  presets: "预设",
+  preset_name: "预设名称",
+  load_preset: "加载预设",
+  delete_preset: "删除预设",
+  reorder_detection: "重新排序检测",
+  similarity_heatmap: "相似度热图",
+  swipe_hint: "向左/右滑动接受",
+  expiry_hours: "过期时间（小时，0 = 永不过期）",
+  share: "分享",
 };
 
 export default translations;

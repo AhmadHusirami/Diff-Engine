@@ -11,7 +11,13 @@ interface Props {
 export function FullscreenToggle({ fullscreen, onToggle }: Props) {
   const { t } = useLanguage();
   return (
-    <Button variant="ghost" size="icon" onClick={onToggle} title={fullscreen ? t('exit_fullscreen') : t('fullscreen')}>
+    <Button
+      variant="outline"
+      size="icon"
+      className="h-9 w-9"
+      onClick={onToggle}
+      aria-label={fullscreen ? t('exit_fullscreen') : t('fullscreen')}
+    >
       {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
     </Button>
   );

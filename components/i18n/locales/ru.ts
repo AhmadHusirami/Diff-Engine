@@ -1,4 +1,6 @@
-const translations = {
+import type { TranslationDict } from "./en";
+
+const translations: TranslationDict = {
   app_title: "Инструмент сравнения текста",
   saved: "Сохранено",
   input_texts: "Входные тексты",
@@ -76,6 +78,23 @@ const translations = {
   stats_title: "Статистика сравнения",
   drop_files_here: "Перетащите файлы сюда",
   drag_drop_hint: "или нажмите для загрузки",
+  share_expired: "Срок действия ссылки истёк.",
+  import_gist: "Импорт из Gist",
+  export_html: "Стилизованный HTML",
+  export_markdown: "Markdown",
+  type_command: "Введите команду...",
+  fullscreen: "Полноэкранный режим",
+  exit_fullscreen: "Выйти из полноэкранного режима",
+  distraction_free: "Без отвлечений",
+  presets: "Пресеты",
+  preset_name: "Название пресета",
+  load_preset: "Загрузить пресет",
+  delete_preset: "Удалить пресет",
+  reorder_detection: "Обнаружение перестановок",
+  similarity_heatmap: "Тепловая карта сходства",
+  swipe_hint: "Проведите влево/вправо, чтобы принять",
+  expiry_hours: "Истекает (часы, 0 = никогда)",
+  share: "Поделиться",
 };
 
 export default translations;

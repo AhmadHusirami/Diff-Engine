@@ -43,7 +43,7 @@ function CopyLineButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/line:opacity-100 transition-opacity p-1 rounded hover:bg-muted/80 text-muted-foreground bg-background/50 backdrop-blur-sm border border-border/50"
-      title="Copy line"
+      aria-label="Copy line"
     >
       {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
@@ -280,6 +280,7 @@ export function DiffViewer({
     if (!settings.collapseUnchanged) return diffResult.rows as (Row | { type: 'collapsed_placeholder'; count: number })[];
     const collapsedRows: (Row | { type: 'collapsed_placeholder'; count: number })[] = [];
     let unchangedCount = 0;
+    let collapsedStartIdx = -1;
     const CONTEXT_LINES = 3;
 
     for (let i = 0; i < diffResult.rows.length; i++) {
@@ -436,14 +437,15 @@ export function DiffViewer({
   };
 
   return (
-    <div className="flex gap-1 printable-diff">
+    <div className="flex gap-1 printable-diff min-w-0">
       <div className={cn(
-        "rounded-xl border border-border bg-card shadow-sm overflow-hidden font-mono text-sm leading-relaxed flex-1",
+        "rounded-xl border border-border bg-card shadow-sm overflow-hidden font-mono text-sm leading-relaxed flex-1 min-w-0",
         `theme-${settings.syntaxTheme}`
       )}>
         {settings.viewMode === 'split' && (
-          <div className="flex w-full min-w-[600px] md:min-w-full" style={{ height: 'calc(100vh - 16rem)', minHeight: '400px' }}>
-            <div ref={leftScrollRef} className="flex-1 overflow-y-auto border-e border-border diff-pane">
+          <div className="flex flex-col md:flex-row w-full h-[calc(100vh-16rem)] min-h-[400px] min-w-0">
+            <div ref={leftScrollRef} className="flex-1 min-w-0 overflow-x-auto overflow-y-auto border-b md:border-b-0 md:border-e border-border diff-pane min-h-[220px]">
+              <div className="min-w-full w-max">
               {rowsToRender.map((row, idx) => {
                 if ('type' in row) {
                   return <div key={`col-${idx}`} className="flex w-full border-b border-border/50 last:border-0 bg-muted/10 py-2 justify-center text-xs text-muted-foreground">... {row.count} collapsed unchanged lines ...</div>;
@@ -457,7 +459,7 @@ export function DiffViewer({
                 return (
                   <div
                     key={idx}
-                    className={cn("flex border-b border-border/50 last:border-0 transition-colors duration-200 relative group/line", left.type !== 'unchanged' && "diff-change")}
+                    className={cn("flex min-w-full border-b border-border/50 last:border-0 transition-colors duration-200 relative group/line", left.type !== 'unchanged' && "diff-change")}
                     style={isMoved ? getMovedStyle() : (left.type === 'removed' ? getRemovedStyle() : {})}
                     onDoubleClick={() => {
                       if (!mergeMode && onEditOriginal && left.lineNum !== undefined && left.type !== 'empty') {
@@ -472,7 +474,7 @@ export function DiffViewer({
                         {left.lineNum || '\u00A0'}
                       </div>
                     )}
-                    <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                    <div className={cn("flex-1 min-w-max px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words min-w-0" : "whitespace-pre")}>
                       {left.type === 'empty' ? null : isEditing ? (
                         <input autoFocus value={editing!.value} onChange={(e) => setEditing({ ...editing!, value: e.target.value })} onBlur={saveEdit} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} className="w-full bg-transparent border-b border-ring focus:outline-none" />
                       ) : (
@@ -489,19 +491,21 @@ export function DiffViewer({
                     )}
                     {showMerge && left.type !== 'empty' && (
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover/line:opacity-100 transition-opacity">
-                        <button onClick={() => onMergeDecision(idx, 'left')} className={`p-1 rounded ${decision === 'left' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('accept_left')}><ArrowLeft className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'left')} className={`p-1 rounded ${decision === 'left' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('accept_left')}><ArrowLeft className="w-3 h-3" /></button>
                         {right.type !== 'empty' && (
-                          <button onClick={() => onMergeDecision(idx, 'right')} className={`p-1 rounded ${decision === 'right' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('accept_right')}><ArrowRight className="w-3 h-3" /></button>
+                          <button onClick={() => onMergeDecision(idx, 'right')} className={`p-1 rounded ${decision === 'right' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('accept_right')}><ArrowRight className="w-3 h-3" /></button>
                         )}
-                        <button onClick={() => onMergeDecision(idx, 'both')} className={`p-1 rounded ${decision === 'both' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('keep_both')}><Plus className="w-3 h-3" /></button>
-                        <button onClick={() => onMergeDecision(idx, 'discard')} className={`p-1 rounded ${decision === 'discard' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('discard')}><X className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'both')} className={`p-1 rounded ${decision === 'both' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('keep_both')}><Plus className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'discard')} className={`p-1 rounded ${decision === 'discard' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('discard')}><X className="w-3 h-3" /></button>
                       </div>
                     )}
                   </div>
                 );
               })}
+              </div>
             </div>
-            <div ref={rightScrollRef} className="flex-1 overflow-y-auto diff-pane">
+            <div ref={rightScrollRef} className="flex-1 min-w-0 overflow-x-auto overflow-y-auto diff-pane min-h-[220px]">
+              <div className="min-w-full w-max">
               {rowsToRender.map((row, idx) => {
                 if ('type' in row) {
                   return <div key={`col-${idx}`} className="flex w-full border-b border-border/50 last:border-0 bg-muted/10 py-2 justify-center text-xs text-muted-foreground">... {row.count} collapsed unchanged lines ...</div>;
@@ -515,7 +519,7 @@ export function DiffViewer({
                 return (
                   <div
                     key={idx}
-                    className={cn("flex border-b border-border/50 last:border-0 transition-colors duration-200 relative group/line", right.type !== 'unchanged' && "diff-change")}
+                    className={cn("flex min-w-full border-b border-border/50 last:border-0 transition-colors duration-200 relative group/line", right.type !== 'unchanged' && "diff-change")}
                     style={isMoved ? getMovedStyle() : (right.type === 'added' ? getAddedStyle() : {})}
                     onDoubleClick={() => {
                       if (!mergeMode && onEditModified && right.lineNum !== undefined && right.type !== 'empty') {
@@ -530,7 +534,7 @@ export function DiffViewer({
                         {right.lineNum || '\u00A0'}
                       </div>
                     )}
-                    <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                    <div className={cn("flex-1 min-w-max px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words min-w-0" : "whitespace-pre")}>
                       {right.type === 'empty' ? null : isEditing ? (
                         <input autoFocus value={editing!.value} onChange={(e) => setEditing({ ...editing!, value: e.target.value })} onBlur={saveEdit} onKeyDown={(e) => e.key === 'Enter' && saveEdit()} className="w-full bg-transparent border-b border-ring focus:outline-none" />
                       ) : (
@@ -547,15 +551,16 @@ export function DiffViewer({
                     )}
                     {showMerge && right.type !== 'empty' && (
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover/line:opacity-100 transition-opacity">
-                        <button onClick={() => onMergeDecision(idx, 'left')} className={`p-1 rounded ${decision === 'left' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('accept_left')}><ArrowLeft className="w-3 h-3" /></button>
-                        <button onClick={() => onMergeDecision(idx, 'right')} className={`p-1 rounded ${decision === 'right' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('accept_right')}><ArrowRight className="w-3 h-3" /></button>
-                        <button onClick={() => onMergeDecision(idx, 'both')} className={`p-1 rounded ${decision === 'both' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('keep_both')}><Plus className="w-3 h-3" /></button>
-                        <button onClick={() => onMergeDecision(idx, 'discard')} className={`p-1 rounded ${decision === 'discard' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} title={t('discard')}><X className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'left')} className={`p-1 rounded ${decision === 'left' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('accept_left')}><ArrowLeft className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'right')} className={`p-1 rounded ${decision === 'right' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('accept_right')}><ArrowRight className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'both')} className={`p-1 rounded ${decision === 'both' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('keep_both')}><Plus className="w-3 h-3" /></button>
+                        <button onClick={() => onMergeDecision(idx, 'discard')} className={`p-1 rounded ${decision === 'discard' ? 'bg-primary/20 text-primary' : 'hover:bg-muted/80'}`} aria-label={t('discard')}><X className="w-3 h-3" /></button>
                       </div>
                     )}
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
         )}
@@ -577,7 +582,7 @@ export function DiffViewer({
                           <div className="w-12 shrink-0 text-end pe-3 py-1 select-none opacity-70 border-e border-border">-</div>
                         </>
                       )}
-                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
                         {renderLine(left.tokens, true, false, isMoved)}
                       </div>
                       <CopyLineButton text={left.tokens.map(t => t.value).join('')} />
@@ -591,7 +596,7 @@ export function DiffViewer({
                           <div className="w-12 shrink-0 text-end pe-3 py-1 select-none opacity-70 border-e border-border">{right.lineNum}</div>
                         </>
                       )}
-                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
                         {renderLine(right.tokens, false, true, isMoved)}
                       </div>
                       <CopyLineButton text={right.tokens.map(t => t.value).join('')} />
@@ -605,7 +610,7 @@ export function DiffViewer({
                           <div className="w-12 shrink-0 text-end pe-3 py-1 select-none text-muted-foreground border-e border-border bg-muted/30">{right.lineNum}</div>
                         </>
                       )}
-                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                      <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
                         {renderLine(left.tokens, false, false, isMoved)}
                       </div>
                     </div>
@@ -629,7 +634,7 @@ export function DiffViewer({
                         <div className="w-12 shrink-0 text-end pe-3 py-1 select-none text-muted-foreground border-e border-border bg-muted/30">{row.right.lineNum}</div>
                       </>
                     )}
-                    <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                    <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
                       {renderLine(row.left.tokens, false, false, row.left.moved || row.right.moved)}
                     </div>
                   </div>
@@ -644,7 +649,7 @@ export function DiffViewer({
                       <div className="w-12 shrink-0 text-end pe-3 py-1 select-none opacity-70 border-e border-border" style={row.right.type === 'added' ? getAddedStyle() : {}}>{row.right.lineNum || '\u00A0'}</div>
                     </>
                   )}
-                  <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre overflow-x-auto")}>
+                  <div className={cn("flex-1 px-4 py-1", settings.wordWrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
                     {row.left.type === 'removed' && renderLine(row.left.tokens, true, false, isMoved)}
                     {row.right.type === 'added' && renderLine(row.right.tokens, false, true, isMoved)}
                   </div>
@@ -665,3 +670,5 @@ export function DiffViewer({
     </div>
   );
 }
+
+

@@ -100,7 +100,7 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true);
     }, 0);
-  }, []);
+  }, [originalHistory, modifiedHistory]);
 
   useEffect(() => {
     if (isLoaded) {

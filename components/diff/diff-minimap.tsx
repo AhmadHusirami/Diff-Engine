@@ -51,9 +51,9 @@ export function DiffMinimap({ rows, onScrollToIndex, similarityHeatmap = false }
       ref={containerRef}
       onClick={handleClick}
       className="w-12 h-full bg-muted/10 border-l border-border/50 cursor-pointer overflow-hidden select-none"
-      title="Minimap – click to scroll"
+      aria-label="Minimap - click to scroll"
     >
-      <div className="flex flex-col h-full" style={{ transform: 'scaleY(0.2)', transformOrigin: 'top' }}>
+      <div className="flex flex-col h-full scale-y-[0.2] origin-top">
         {rows.map((row, idx) => {
           if ('type' in row) {
             return <div key={idx} className="h-1 w-full bg-muted-foreground/30" />;
@@ -65,3 +65,6 @@ export function DiffMinimap({ rows, onScrollToIndex, similarityHeatmap = false }
     </div>
   );
 }
+
+
+

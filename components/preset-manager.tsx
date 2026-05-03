@@ -15,8 +15,8 @@ export function PresetManager() {
   return (
     <div className="space-y-3">
       <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('presets')}</h5>
-      <div className="flex gap-2">
-        <Input value={name} onChange={e => setName(e.target.value)} placeholder={t('preset_name')} />
+      <div className="flex items-center gap-2">
+        <Input className="flex-1" value={name} onChange={e => setName(e.target.value)} placeholder={t('preset_name')} />
         <Button size="sm" onClick={() => { savePreset(name); setName(''); }} disabled={!name}>
           <Save className="w-3.5 h-3.5" />
         </Button>

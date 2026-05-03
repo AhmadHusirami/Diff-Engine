@@ -1,4 +1,6 @@
-const translations = {
+import type { TranslationDict } from "./en";
+
+const translations: TranslationDict = {
   app_title: "Amûra Ferqa Nivîsê",
   saved: "Hatan tomarkirin",
   input_texts: "Nivîsên Têketinê",
@@ -76,6 +78,23 @@ const translations = {
   stats_title: "Statîstîkên Berawirdkirinê",
   drop_files_here: "Dosyeyan li vir bavêjin",
   drag_drop_hint: "an ji bo barkirinê bikirtînin",
+  share_expired: "Girêdana parvekirî qediya.",
+  import_gist: "Ji Gist ve bîne",
+  export_html: "HTML-a xemilandî",
+  export_markdown: "Markdown",
+  type_command: "Fermanek binivîse...",
+  fullscreen: "Dîmendera tevahî",
+  exit_fullscreen: "Ji dîmendera tevahî derkeve",
+  distraction_free: "Bê belavbûn",
+  presets: "Mîhengên amade",
+  preset_name: "Navê mîhengê",
+  load_preset: "Mîhengê bar bike",
+  delete_preset: "Mîhengê jê bibe",
+  reorder_detection: "Nasîna rêzkirina nû",
+  similarity_heatmap: "Nexşeya germahiya hemaniyê",
+  swipe_hint: "Bişe çep/rast ji bo qebûlkirinê",
+  expiry_hours: "Dawî (saet, 0 = hergiz)",
+  share: "Parve bike",
 };
 
 export default translations;

@@ -12,7 +12,7 @@ import ku from './locales/ku';
 
 type Language = 'en' | 'ar' | 'es' | 'fr' | 'zh' | 'de' | 'ru' | 'ku';
 
-const translationsMap: Record<Language, Record<string, string>> = {
+const translationsMap: Record<Language, typeof en> = {
   en,
   ar,
   es,

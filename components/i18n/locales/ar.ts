@@ -1,4 +1,6 @@
-const translations = {
+import type { TranslationDict } from "./en";
+
+const translations: TranslationDict = {
   app_title: "أداة مقارنة النصوص",
   saved: "تم الحفظ",
   input_texts: "النصوص المدخلة",
@@ -76,6 +78,23 @@ const translations = {
   stats_title: "إحصائيات المقارنة",
   drop_files_here: "أسقط الملفات هنا",
   drag_drop_hint: "أو انقر للرفع",
+  share_expired: "انتهت صلاحية رابط المشاركة.",
+  import_gist: "استيراد من Gist",
+  export_html: "HTML منسق",
+  export_markdown: "Markdown",
+  type_command: "اكتب أمرًا...",
+  fullscreen: "ملء الشاشة",
+  exit_fullscreen: "الخروج من ملء الشاشة",
+  distraction_free: "وضع التركيز",
+  presets: "إعدادات مسبقة",
+  preset_name: "اسم الإعداد المسبق",
+  load_preset: "تحميل الإعداد المسبق",
+  delete_preset: "حذف الإعداد المسبق",
+  reorder_detection: "كشف إعادة الترتيب",
+  similarity_heatmap: "خريطة حرارة التشابه",
+  swipe_hint: "اسحب يسارًا/يمينًا لقبول",
+  expiry_hours: "الصلاحية (ساعات، 0 = دائم)",
+  share: "مشاركة",
 };
 
 export default translations;

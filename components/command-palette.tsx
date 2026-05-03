@@ -17,7 +17,6 @@ export function CommandPalette({ open, onClose, actions }: { open: boolean; onCl
 
   useEffect(() => {
     if (open) {
-      setQuery('');
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
@@ -27,15 +26,21 @@ export function CommandPalette({ open, onClose, actions }: { open: boolean; onCl
   const filtered = actions.filter(a => a.label.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/30 flex items-start justify-center pt-[20vh]" onClick={onClose}>
-      <div className="bg-popover rounded-xl shadow-xl w-full max-w-md p-4" onClick={e => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-black/30 flex items-start justify-center pt-[12vh] px-3 sm:px-4"
+      onClick={() => {
+        setQuery('');
+        onClose();
+      }}
+    >
+      <div className="bg-popover rounded-xl shadow-xl w-full max-w-md p-3 sm:p-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-2 mb-4">
           <Search className="w-4 h-4 text-muted-foreground" />
           <Input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} placeholder={t('type_command')} />
         </div>
         <div className="max-h-64 overflow-y-auto space-y-1">
           {filtered.map(action => (
-            <Button key={action.id} variant="ghost" className="w-full justify-start" onClick={() => { action.onSelect(); onClose(); }}>
+            <Button key={action.id} variant="ghost" className="w-full justify-start" onClick={() => { action.onSelect(); setQuery(''); onClose(); }}>
               {action.label}
             </Button>
           ))}

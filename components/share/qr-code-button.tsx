@@ -9,7 +9,7 @@ export function QrCodeButton({ url }: { url: string }) {
   return (
     <Popover>
       <PopoverTrigger render={<Button variant="ghost" size="icon"><QrCode className="w-4 h-4" /></Button>} />
-      <PopoverContent className="p-4 flex justify-center">
+      <PopoverContent className="p-4 flex justify-center w-[min(18rem,calc(100vw-2rem))]">
         <QRCode value={url} size={128} />
       </PopoverContent>
     </Popover>

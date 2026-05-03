@@ -1,14 +1,14 @@
 {
   "short_name": "Diff Tool",
-  "name": "Text Diff Tool",
+  "name": "Text Diff Engine",
   "icons": [
     {
-      "src": "/assets/icons/icon-192.png",
+      "src": "/favicon/web-app-manifest-192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/assets/icons/icon-512.png",
+      "src": "/favicon/web-app-manifest-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

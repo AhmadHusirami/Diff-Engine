@@ -248,12 +248,8 @@
 
 /* Prevent scrollbar disappearing on Base UI select/popover open */
 html, body {
-  overflow: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
-/* Full‑screen distraction‑free mode */
-body.distraction-free header,
-body.distraction-free .diff-toolbar,
-body.distraction-free .no-print {
-  display: none !important;
-}
+

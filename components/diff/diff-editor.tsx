@@ -161,11 +161,11 @@ export function DiffEditor() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-lg font-semibold tracking-tight">{t('input_texts')}</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleClear} title="Clear All (Alt+X)">
+          <Button variant="outline" size="sm" onClick={handleClear} aria-label="Clear All (Alt+X)">
             <Trash2 className="w-4 h-4 me-2" />
             {t('clear')}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleSwap} title="Swap (Alt+S)">
+          <Button variant="outline" size="sm" onClick={handleSwap} aria-label="Swap (Alt+S)">
             <ArrowLeftRight className="w-4 h-4 me-2" />
             {t('swap')}
           </Button>
@@ -180,11 +180,11 @@ export function DiffEditor() {
           onDragLeave={() => setDragOverOriginal(false)}
           onDrop={(e) => { handleDropOriginal(e); }}
         >
-          <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
+          <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 bg-muted/50 border-b border-border">
             <span className="text-sm font-medium text-muted-foreground">{t('original_text')}</span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto max-w-full scrollbar-hide">
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('text_actions')} />}>
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('text_actions')} />}>
                   <Wand2 className="w-3.5 h-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -200,7 +200,7 @@ export function DiffEditor() {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => formatJSON(originalText, setOriginalText)}
-                title={t('format_json')}
+                aria-label={t('format_json')}
               >
                 <FileJson className="w-3.5 h-3.5" />
               </Button>
@@ -212,10 +212,10 @@ export function DiffEditor() {
                 onChange={(e) => handleFileUpload(e, setOriginalText)}
               />
               <Popover open={isOriginalUrlOpen} onOpenChange={setIsOriginalUrlOpen}>
-                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('load_url')} />}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('load_url')} />}>
                   <Link className="w-3.5 h-3.5" />
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-3">
+                <PopoverContent className="w-[min(20rem,calc(100vw-2rem))] p-3">
                   <div className="flex gap-2">
                     <Input
                       placeholder="https://..."
@@ -228,10 +228,10 @@ export function DiffEditor() {
                 </PopoverContent>
               </Popover>
               <Popover open={isGistOpen} onOpenChange={setIsGistOpen}>
-                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('import_gist')} />}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('import_gist')} />}>
                   <GitBranch className="w-3.5 h-3.5" />
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-3">
+                <PopoverContent className="w-[min(20rem,calc(100vw-2rem))] p-3">
                   <div className="flex gap-2">
                     <Input
                       placeholder="Gist URL or ID"
@@ -247,7 +247,7 @@ export function DiffEditor() {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => originalFileInputRef.current?.click()}
-                title={t('upload_file')}
+                aria-label={t('upload_file')}
               >
                 <Upload className="w-3.5 h-3.5" />
               </Button>
@@ -257,7 +257,7 @@ export function DiffEditor() {
                 className="h-7 w-7"
                 onClick={originalHistory.undo}
                 disabled={!originalHistory.canUndo}
-                title={t('undo')}
+                aria-label={t('undo')}
               >
                 <Undo2 className="w-3.5 h-3.5" />
               </Button>
@@ -267,7 +267,7 @@ export function DiffEditor() {
                 className="h-7 w-7"
                 onClick={originalHistory.redo}
                 disabled={!originalHistory.canRedo}
-                title={t('redo')}
+                aria-label={t('redo')}
               >
                 <Redo2 className="w-3.5 h-3.5" />
               </Button>
@@ -299,11 +299,11 @@ export function DiffEditor() {
           onDragLeave={() => setDragOverModified(false)}
           onDrop={(e) => { handleDropModified(e); }}
         >
-          <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border">
+          <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 bg-muted/50 border-b border-border">
             <span className="text-sm font-medium text-muted-foreground">{t('modified_text')}</span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto max-w-full scrollbar-hide">
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('text_actions')} />}>
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('text_actions')} />}>
                   <Wand2 className="w-3.5 h-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -319,7 +319,7 @@ export function DiffEditor() {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => formatJSON(modifiedText, setModifiedText)}
-                title={t('format_json')}
+                aria-label={t('format_json')}
               >
                 <FileJson className="w-3.5 h-3.5" />
               </Button>
@@ -331,10 +331,10 @@ export function DiffEditor() {
                 onChange={(e) => handleFileUpload(e, setModifiedText)}
               />
               <Popover open={isModifiedUrlOpen} onOpenChange={setIsModifiedUrlOpen}>
-                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('load_url')} />}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('load_url')} />}>
                   <Link className="w-3.5 h-3.5" />
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-3">
+                <PopoverContent className="w-[min(20rem,calc(100vw-2rem))] p-3">
                   <div className="flex gap-2">
                     <Input
                       placeholder="https://..."
@@ -347,10 +347,10 @@ export function DiffEditor() {
                 </PopoverContent>
               </Popover>
               <Popover open={isGistOpen} onOpenChange={setIsGistOpen}>
-                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" title={t('import_gist')} />}>
+                <PopoverTrigger render={<Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t('import_gist')} />}>
                   <GitBranch className="w-3.5 h-3.5" />
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-3">
+                <PopoverContent className="w-[min(20rem,calc(100vw-2rem))] p-3">
                   <div className="flex gap-2">
                     <Input
                       placeholder="Gist URL or ID"
@@ -366,7 +366,7 @@ export function DiffEditor() {
                 size="icon"
                 className="h-7 w-7"
                 onClick={() => modifiedFileInputRef.current?.click()}
-                title={t('upload_file')}
+                aria-label={t('upload_file')}
               >
                 <Upload className="w-3.5 h-3.5" />
               </Button>
@@ -376,7 +376,7 @@ export function DiffEditor() {
                 className="h-7 w-7"
                 onClick={modifiedHistory.undo}
                 disabled={!modifiedHistory.canUndo}
-                title={t('undo')}
+                aria-label={t('undo')}
               >
                 <Undo2 className="w-3.5 h-3.5" />
               </Button>
@@ -386,7 +386,7 @@ export function DiffEditor() {
                 className="h-7 w-7"
                 onClick={modifiedHistory.redo}
                 disabled={!modifiedHistory.canRedo}
-                title={t('redo')}
+                aria-label={t('redo')}
               >
                 <Redo2 className="w-3.5 h-3.5" />
               </Button>
@@ -414,3 +414,4 @@ export function DiffEditor() {
     </div>
   );
 }
+
