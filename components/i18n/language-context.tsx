@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import en from './locales/en';
+import type { TranslationKey } from './locales/en';
 import ar from './locales/ar';
 import es from './locales/es';
 import fr from './locales/fr';
@@ -52,7 +53,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [language]);
 
   const t = (key: string) => {
-    return translationsMap[language][key] || key;
+    const dict = translationsMap[language];
+    return key in dict ? dict[key as TranslationKey] : key;
   };
 
   return (
