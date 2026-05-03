@@ -124,7 +124,7 @@ export function DiffToolbar({
     <div className="sticky top-16 z-20 flex flex-col gap-3 p-3 rounded-xl bg-card border border-border shadow-sm overflow-hidden diff-toolbar no-print">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide">
-          <Select value={settings.language} onValueChange={(val) => updateSettings({ language: val })}>
+          <Select value={settings.language} onValueChange={(val) => updateSettings({ language: val as string })}>
             <SelectTrigger className="w-[140px] h-9 bg-muted/50 border-border hover:bg-muted transition-colors">
               <SelectValue placeholder={t('language')} />
             </SelectTrigger>
