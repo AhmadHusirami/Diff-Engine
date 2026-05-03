@@ -416,7 +416,7 @@ export function DiffToolbar({
                   <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('syntax_highlighting')}</h5>
                   <div className="flex items-center justify-between gap-2">
                     <Label className="text-[13px]">{t('syntax_theme')}</Label>
-                    <Select value={settings.syntaxTheme} onValueChange={(v) => updateSettings({ syntaxTheme: v })}>
+                    <Select value={settings.syntaxTheme} onValueChange={(v) => updateSettings({ syntaxTheme: v as string })}>
                       <SelectTrigger className="h-9 bg-muted/50 w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="github">GitHub (Default)</SelectItem>
