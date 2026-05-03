@@ -57,11 +57,6 @@ function SelectTrigger({
   )
 }
 
-// Helper: removes the `modal` prop before rendering
-function PositionerWithoutModal({ modal, ...props }: React.ComponentProps<typeof SelectPrimitive.Positioner>) {
-  return <SelectPrimitive.Positioner {...props} />
-}
-
 function SelectContent({
   className,
   children,
@@ -78,13 +73,12 @@ function SelectContent({
   >) {
   return (
     <SelectPrimitive.Portal>
-      <PositionerWithoutModal
+      <SelectPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
-        modal={false}                     // keeps the scrollbar visible
         className="isolate z-50"
       >
         <SelectPrimitive.Popup
@@ -100,7 +94,7 @@ function SelectContent({
           <SelectPrimitive.List>{children}</SelectPrimitive.List>
           <SelectScrollDownButton />
         </SelectPrimitive.Popup>
-      </PositionerWithoutModal>
+      </SelectPrimitive.Positioner>
     </SelectPrimitive.Portal>
   )
 }

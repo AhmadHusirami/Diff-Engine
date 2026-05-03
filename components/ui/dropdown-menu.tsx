@@ -17,11 +17,6 @@ function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
 }
 
-// Helper: strips modal from DOM
-function PositionerWithoutModal({ modal, ...props }: React.ComponentProps<typeof MenuPrimitive.Positioner>) {
-  return <MenuPrimitive.Positioner {...props} />
-}
-
 function DropdownMenuContent({
   align = "start",
   alignOffset = 0,
@@ -36,13 +31,12 @@ function DropdownMenuContent({
   >) {
   return (
     <MenuPrimitive.Portal>
-      <PositionerWithoutModal
+      <MenuPrimitive.Positioner
         className="isolate z-50 outline-none"
         align={align}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        modal={false}
       >
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
@@ -52,7 +46,7 @@ function DropdownMenuContent({
           )}
           {...props}
         />
-      </PositionerWithoutModal>
+      </MenuPrimitive.Positioner>
     </MenuPrimitive.Portal>
   )
 }

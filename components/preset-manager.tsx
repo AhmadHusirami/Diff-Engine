@@ -22,7 +22,7 @@ export function PresetManager() {
         </Button>
       </div>
       {presets.length > 0 && (
-        <Select onValueChange={loadPreset}>
+        <Select onValueChange={(value) => loadPreset(value as string)}>
           <SelectTrigger className="h-8">
             <SelectValue placeholder={t('load_preset')} />
           </SelectTrigger>

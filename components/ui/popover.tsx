@@ -12,11 +12,6 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
-// Helper: strips modal from DOM
-function PositionerWithoutModal({ modal, ...props }: React.ComponentProps<typeof PopoverPrimitive.Positioner>) {
-  return <PopoverPrimitive.Positioner {...props} />
-}
-
 function PopoverContent({
   className,
   align = "center",
@@ -31,12 +26,11 @@ function PopoverContent({
   >) {
   return (
     <PopoverPrimitive.Portal>
-      <PositionerWithoutModal
+      <PopoverPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        modal={false}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup
@@ -47,7 +41,7 @@ function PopoverContent({
           )}
           {...props}
         />
-      </PositionerWithoutModal>
+      </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
   )
 }

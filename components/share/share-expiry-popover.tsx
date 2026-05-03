@@ -9,7 +9,7 @@ import { useLanguage } from '@/components/i18n/language-context';
 interface Props {
   onShare: (hours: number) => Promise<void>;
   shareUrl: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
 }
 
 export function ShareExpiryPopover({ onShare, shareUrl, children }: Props) {
