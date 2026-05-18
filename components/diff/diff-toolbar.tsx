@@ -123,7 +123,7 @@ export function DiffToolbar({
   return (
     <div className="sticky top-16 z-20 flex flex-col gap-3 p-3 rounded-xl bg-card border border-border shadow-sm overflow-hidden diff-toolbar no-print">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide">
+        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide touch-pan-x [&_button]:shrink-0 [&_button]:pointer-events-auto [&_button]:touch-manipulation">
           <Select value={settings.language} onValueChange={(val) => updateSettings({ language: val as string })}>
             <SelectTrigger className="w-[140px] h-9 bg-muted/50 border-border hover:bg-muted transition-colors">
               <SelectValue placeholder={t('language')} />
@@ -211,14 +211,15 @@ export function DiffToolbar({
             </div>
           )}
 
-          <ShareExpiryPopover onShare={onShareWithExpiry} shareUrl={shareUrl}>
-            <Tooltip>
-              <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+          <ShareExpiryPopover
+            onShare={onShareWithExpiry}
+            shareUrl={shareUrl}
+            trigger={
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('share_link')}>
                 <Share2 className="w-4 h-4" />
-              </TooltipTrigger>
-              <TooltipContent>{t('share_link')}</TooltipContent>
-            </Tooltip>
-          </ShareExpiryPopover>
+              </Button>
+            }
+          />
 
           <QrCodeButton url={shareUrl} />
 
@@ -233,7 +234,7 @@ export function DiffToolbar({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide">
+        <div className="flex items-center gap-2 shrink-0 overflow-x-auto max-w-full pb-1 scrollbar-hide touch-pan-x [&_button]:shrink-0 [&_button]:pointer-events-auto [&_button]:touch-manipulation">
           <div className="flex items-center bg-muted/50 p-1 rounded-lg border border-border/50">
             <Tooltip>
               <TooltipTrigger render={<Button variant={settings.wordLevelDiff ? 'default' : 'ghost'} size="sm" className="h-7 px-2 gap-2" onClick={() => updateSettings({ wordLevelDiff: !settings.wordLevelDiff })} />}>

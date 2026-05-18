@@ -130,8 +130,12 @@ function DiffToolInner() {
     const data = { originalText, modifiedText, settings, expiry };
     const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
     const url = `${window.location.origin}${window.location.pathname}#${compressed}`;
-    await navigator.clipboard.writeText(url);
     setShareUrl(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Ignore clipboard permission errors; URL is still shown in the popover.
+    }
   };
 
   const handlePrint = () => {

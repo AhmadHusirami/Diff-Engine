@@ -1,9 +1,18 @@
 const CACHE_NAME = 'diff-tool-v1';
-const urlsToCache = ['/', '/globals.css'];
+const urlsToCache = ['/'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await Promise.all(
+        urlsToCache.map((url) =>
+          cache.add(url).catch(() => {
+            // Ignore failed precache entries.
+          })
+        )
+      );
+    })()
   );
 });
 

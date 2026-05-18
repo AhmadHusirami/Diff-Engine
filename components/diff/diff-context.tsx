@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useHistory } from '@/hooks/use-history';
 
 export type DiffSettings = {
@@ -74,14 +74,18 @@ export function DiffProvider({ children }: { children: ReactNode }) {
   const [isSaved, setIsSaved] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [presets, setPresets] = useState<SettingsPreset[]>([]);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     const savedOrig = localStorage.getItem('diff_originalText');
     const savedMod = localStorage.getItem('diff_modifiedText');
     const savedSettings = localStorage.getItem('diff_settings');
     const savedPresets = localStorage.getItem('diff_presets');
 
-    setTimeout(() => {
+    const initTimer = setTimeout(() => {
       if (savedOrig) originalHistory.reset(savedOrig);
       if (savedMod) modifiedHistory.reset(savedMod);
       if (savedSettings) {
@@ -100,7 +104,11 @@ export function DiffProvider({ children }: { children: ReactNode }) {
       }
       setIsLoaded(true);
     }, 0);
-  }, [originalHistory, modifiedHistory]);
+
+    return () => clearTimeout(initTimer);
+    // We intentionally run initial hydration once to avoid effect loops from unstable object deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isLoaded) {

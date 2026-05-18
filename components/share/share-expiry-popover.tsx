@@ -9,15 +9,19 @@ import { useLanguage } from '@/components/i18n/language-context';
 interface Props {
   onShare: (hours: number) => Promise<void>;
   shareUrl: string;
-  children: React.ReactElement;
+  trigger: React.ReactElement;
 }
 
-export function ShareExpiryPopover({ onShare, shareUrl, children }: Props) {
+export function ShareExpiryPopover({ onShare, shareUrl, trigger }: Props) {
   const [hours, setHours] = useState(0);
   const { t } = useLanguage();
+  const displayShareUrl = shareUrl
+    ? `${window.location.origin}${window.location.pathname}#...`
+    : '';
+
   return (
     <Popover>
-      <PopoverTrigger render={children} />
+      <PopoverTrigger render={trigger} />
       <PopoverContent className="w-[min(20rem,calc(100vw-2rem))]">
         <div className="space-y-4">
           <h4 className="font-medium">{t('share_link')}</h4>
@@ -27,7 +31,7 @@ export function ShareExpiryPopover({ onShare, shareUrl, children }: Props) {
             <Input type="number" min={0} value={hours} onChange={e => setHours(Number(e.target.value))} className="w-20" />
           </div>
           <Button onClick={() => onShare(hours)}><Share2 className="w-4 h-4 mr-2" /> {t('share')}</Button>
-          {shareUrl && <div className="break-all text-xs bg-muted p-2 rounded">{shareUrl}</div>}
+          {shareUrl && <div className="break-all text-xs bg-muted p-2 rounded">{displayShareUrl}</div>}
         </div>
       </PopoverContent>
     </Popover>
