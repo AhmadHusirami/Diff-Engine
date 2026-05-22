@@ -16,6 +16,7 @@ import { DiffStatsPopover } from './diff-stats-popover';
 import { QrCodeButton } from '../share/qr-code-button';
 import { ShareExpiryPopover } from '../share/share-expiry-popover';
 import { PresetManager } from '../preset-manager';
+import { InstallButton } from '../install-button';
 import { generateStyledHTML, generateMarkdownDiff } from '@/lib/export-utils';
 
 interface DiffToolbarProps {
@@ -368,6 +369,8 @@ export function DiffToolbar({
         <Separator orientation="vertical" className="h-6 mx-1" />
 
         <div className="flex items-center gap-2 shrink-0">
+          <InstallButton />
+
           <Tooltip>
             <TooltipTrigger render={<Button variant="outline" size="icon" className="h-9 w-9" onClick={onPrint} />}>
               <Printer className="w-4 h-4" />
